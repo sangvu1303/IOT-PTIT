@@ -1,0 +1,421 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="icon" type="image/x-icon" href="./favicon.ico">
+    <link rel="stylesheet" href="home.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css">
+    
+   
+    <title>HOME</title>
+
+    <script src="jquery.js"></script>
+    <script src="socket.io/socket.io.js"></script>
+    <script src="highcharts.js"></script>
+    <script src="export-data.js"></script>
+    <script src="accessibility.js"></script>
+    <script src="xuly.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.0.1/chart.min.js" integrity="sha512-2uu1jrAmW1A+SMwih5DAPqzFS2PI+OPw79OVLS4NJ6jGHQ/GmIVDDlWwz4KLO8DnoUmYdU8hTtFcp8je6zxbCg==" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script>
+
+
+        var socket = io("http://localhost:6060");
+    
+        socket.on("status", function(data){
+            var data_sensors = JSON.parse(data);
+            console.log(data_sensors);
+            console.log(data_sensors['temp'])
+            console.log(data_sensors['humi'])
+            document.getElementById("nhietdo").innerHTML = data_sensors['temp'];
+            document.getElementById("doam").innerHTML = data_sensors['humi'];
+            
+            var idx = 0;
+            for(idx = 0; idx < 12; idx++){
+                temp_arr[idx] = temp_arr[idx + 1];
+            }
+            temp_arr[12] = data_sensors['temp'];
+    
+            idx = 0;
+            for(idx = 0; idx < 12; idx++){
+                humi_arr[idx] = humi_arr[idx + 1];
+            }
+            humi_arr[12] = data_sensors['humi'];
+    
+            chart_update(myChart);
+            
+        });
+    
+        
+    
+        var relay1 = 0; // tat
+		var relay2 = 0; // tat
+		var relay3 = 0; // tat
+		var relay4 = 0; // tat
+    
+        function clicked_toggle(){
+    
+            if (relay1 == 1){
+                relay1 = 0;
+            }else{
+                relay1 = 1;
+            }
+    
+            if (relay1 > 0){
+                document.getElementById("iconden1").src = "./light.png";
+                document.getElementById("relay1_stt").innerHTML= "light 1 on";
+                socket.emit("relay1", "on");
+            }else{
+                document.getElementById("iconden1").src = "./light_off.png";
+                document.getElementById("relay1_stt").innerHTML= "light 1 off";
+                socket.emit("relay1", "off");
+            }
+            
+            console.log(relay1);
+        };
+    
+        function clicked_toggle2(){
+    
+            if (relay2 == 1){
+                relay2 = 0;
+            }else{
+                relay2 = 1;
+            }
+    
+            if (relay2 > 0){
+                document.getElementById("iconden2").src = "./light.png";
+                document.getElementById("relay2_stt").innerHTML= "light 2 on";
+                socket.emit("relay2", "on");
+            }else{
+                document.getElementById("iconden2").src = "./light_off.png";
+                document.getElementById("relay2_stt").innerHTML= "light 2 off";
+                socket.emit("relay2", "off");
+            }
+            
+            console.log(relay2);
+        };
+    
+		function clicked_toggle3(){
+    
+            if (relay3 == 1){
+                relay3 = 0;
+            }else{
+                relay3 = 1;
+            }
+    
+            if (relay3 > 0){
+                document.getElementById("iconquat1").src = "./fanon.png";
+                document.getElementById("relay3_stt").innerHTML= "fan 1 on";
+                socket.emit("relay3", "on");
+            }else{
+                document.getElementById("iconquat1").src = "./fanoff.png";
+                document.getElementById("relay3_stt").innerHTML= "fan 1 off";
+                socket.emit("relay3", "off");
+            }
+            
+            console.log(relay3);
+        };
+    
+        function clicked_toggle4(){
+    
+            if (relay4 == 1){
+                relay4 = 0;
+            }else{
+                relay4 = 1;
+            }
+    
+            if (relay4 > 0){
+                document.getElementById("iconquat2").src = "./fanon.png";
+                document.getElementById("relay4_stt").innerHTML= "fan 2 on";
+                socket.emit("relay4", "on");
+            }else{
+                document.getElementById("iconquat2").src = "./fanoff.png";
+                document.getElementById("relay4_stt").innerHTML= "fan 2 off";
+                socket.emit("relay4", "off");
+            }
+            
+            console.log(relay4);
+        };
+        
+        setInterval(function(){
+            socket.emit("temphumi_require", "need");
+        }, 5000)
+    </script>
+   
+</head>
+
+
+
+
+<body>
+    
+   
+    <header>
+        <div style = "background-color: #443f39af" class="row ">
+            <div class="col-md-12">
+                <br>
+                <h1 class="text-center text-white " >IOT - SMART HOME SYSTEM</h1>
+                <br>
+            </div>
+        </div>
+    </header>
+
+
+    
+
+    <main style = "background-color:#abb4cf" >
+        <div class="container"style = "background-color:#abb4cf"  >
+           <div style="margin-top: 10px;margin-bottom: 10px;" >
+        
+            <h3 class="mt-6" style="margin-top: 20px;" >HOME STATUS</h3>
+            
+            <div class="row">
+                <div class="col-xl-6 col-md-6">
+                    <div class="row">
+					<!-- nhiệt độ -->
+                        <div class="col-xl-4 col-md-10">
+                            <div class="card text-white mb-4" style = "background-color:  #f20d87;">
+                                <div class="card-body text-center" style="font-size: 18px;">
+                                    <img src="./cel.png" alt="" width="30" height="30"/>
+                                    TEMPERATURE
+                                </div>
+                                
+                                <div class="card-footer d-flex align-items-center justify-content-between">
+                                    <p id="currentTemp" class="" style="font-size: 50px;"> 
+                                    <p>°C</p>
+                                    <div class="small text-white"><i class="text-center"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    <!-- độ ẩm -->
+                        <div class="col-xl-4 col-md-10">
+							<div class="card text-white mb-4" style = "background-color:  #00C5CD;">
+                                <div class="card-body text-center" style="font-size: 19px;">
+                                    <img src="./humi.png" alt="" width="30" height="30"/>
+                                    HUMIDITY </div>
+                                <div class="card-footer d-flex align-items-center justify-content-between">
+                                    <p id="currentHumi" class="" style="font-size: 50px;"> 
+                                    <p>%</p>
+                                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    <!-- độ sáng -->
+                        <div class="col-xl-4 col-md-10">
+                            <div class="card text-white mb-4" style = "background-color:  #ffff0088;">
+                                <div class="card-body text-center" style="font-size: 19px;">
+                                    <img src="./sunny.png" alt="" width="30" height="30"/>
+                                    BRIGHTNESS</div>
+                                <div class="card-footer d-flex align-items-center justify-content-between">
+                                    <p id="currentLight" class="" style="font-size: 50px;"> 
+                                    <p>Lux</p>
+                                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    <!-- thời gian -->
+                        <div class="col"  >
+                            <div class="card text-white mb-4" style = "background-color:  #830866;">
+                                <div class="card-body text-center" style="font-size: 28px;">
+                                    <img src="./clock.png" alt="" width="30" height="30"/>TIME
+                                </div>
+                                <div class="card-footer d-flex align-items-center justify-content-between">
+                                    <p  style="font-size: 50px;"></p>
+						
+								
+									
+                                    <div id="time" style="font-size: 30px;"></div>
+                                    <script>
+                                        var timeDisplay = document.getElementById("time");
+
+                                        function refreshTime() {
+                                            var dateString = new Date().toLocaleString("en-GB", { timeZone: "Asia/Jakarta" });
+                                            var formattedString = dateString.replace(", ", " - ");
+                                            timeDisplay.innerHTML = formattedString;
+                                        }
+
+                                        setInterval(refreshTime, 1000);
+                                       
+                                    </script>
+
+                                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- cảnh báo -->
+						<div class="col-xl-4 col-md-10">
+							<div class="card text-white mb-4"  id="warningSection" style = "background-color:  #ff0000;">
+                                <div class="card-body text-center" style="font-size: 19px;">
+                                    <img src="./bell.png" alt="" width="30" height="40"/>
+                                    WARNING 
+                                </div>                           
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+                
+                
+             <!-- bảng điều khiển -->
+                <div class="col col-6" style="background-color: #209002; height: 400px; ">
+                <div class="row" style="margin-top: 10px;"> 
+    
+                    <div class="container" align="center" vertical-align="middle" >
+                        <div class="constainer" style="margin-bottom: 25px;" >
+                            <h3 class="text-center text-uppercase p-2 rounded"style="background-color:#F5F5F5;">DashBoard</h3>
+                        </div>
+                       
+						<div class="row">
+						
+							<div class="col-xl-6 " >
+                                    <button type="button" class="btn " onclick="clicked_toggle()">
+                                            <img id="iconden1" src="./light_off.png" alt=""  width="50" height="50">
+                                    </button>
+                                        
+                                    <div>
+                                            <h2 id="relay1_stt" class="">light 1 off</h2>
+                                    </div>
+                            </div>
+							
+							<div class="col-xl-6 ">
+                                    <button type="button" class="btn " onclick="clicked_toggle2()">
+                                            <img id="iconden2" src="./light_off.png" alt=""  width="50" height="50">
+                                    </button>
+                                        
+                                    <div>
+                                            <h2 id="relay2_stt" class="">light 2 off</h2>
+                                    </div>
+                            </div>
+							   
+                            <div class="col-xl-6 col-md-12" style="margin-top: 50px;" >
+                                    <button type="button" class="btn " onclick="clicked_toggle3()">
+                                            <img id="iconquat1" src="./fanoff.png" alt=""  width="50" height="50">
+                                    </button>
+                                        
+                                    <div>
+                                            <h2 id="relay3_stt" class="">fan 1 off</h2>
+                                    </div>
+                            </div>
+							<div class="col-xl-6 col-md-12" style="margin-top: 50px;" >
+                                    <button type="button" class="btn " onclick="clicked_toggle4()">
+                                            <img id="iconquat2" src="./fanoff.png" alt=""  width="50" height="50">
+                                    </button>
+                                        
+                                    <div>
+                                            <h2 id="relay4_stt" class="">fan 2 off</h2>
+                                    </div>
+                            </div>
+
+												
+                        </div>                        
+                    </div>                    
+                </div>
+            </div>
+            </div>
+
+            <!-- lịch sử đo -->
+            <div class="title"> About Information
+                <button class="btn btn-success">
+                    <a style="color:aliceblue" href="./history.html" class="form">HISTORY</a>
+                </button>
+            </div>
+
+
+            <!-- đồ thị -->
+            <div class="row" style="margin-top: 20px;">
+                <div class="col col-16">
+                    <div class="card mb-4">
+                        <div class="card-header text-center">
+                            <h3 class="fas fa-chart-area mr-1"> AREA CHART</H3>
+                    
+                        </div class = "row" >
+                            <div class="col-lg-12">
+                                <canvas id="myChart" ></canvas>
+                                <script>
+
+                                
+  
+                                    var power_arr = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+                                    var energy_arr = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+                                    function chart_update(chart){
+                                        chart.data.datasets[0].data = power_arr;
+                                        chart.data.datasets[1].data = energy_arr;
+                                    
+                                        chart.update();
+                                    }
+
+                                    var ctx = document.getElementById('myChart').getContext('2d');
+                                    var myChart = new Chart(ctx, {
+                                        type: 'line',
+                                        data: {
+                                            labels: ['0s', '1s', '2s', '3s', '4s', '5s', '6s', '7s', '7s', '8s', '9s', '10s', '11s', '12s'],
+                                            datasets: [{
+                                                label: 'Power',
+                                                data: [],
+                                                backgroundColor: ["red"],
+                                                borderColor: ["red"],
+                                                borderWidth: 1
+                                            },{
+                                                label: 'Energy',
+                                                data: [],
+                                                backgroundColor: ["blue"],
+                                                borderColor: ["blue"],
+                                                borderWidth: 1
+                                            }]
+                                        },
+                                        options: {
+                                            scales: {
+                                                y: {
+                                                    beginAtZero: true
+                                                }
+                                            }
+                                        }
+                                    });
+
+                                    
+                                </script>
+                                
+                            </div>
+
+     
+                    </div>
+                </div>
+                
+            </div>
+            
+        </div>
+        </div>
+        </div>
+    </main>
+
+</body>
+
+
+<footer>
+    <div style = "background-color: #443f39af" class="row ">
+        <div class="col col-xl-12">
+            <div class="text-center text-white ">
+               
+                <H6>VŨ QUANG SÁNG</H6>           
+                <H6>B18DCDT202</H6>
+
+                    <div class="social-icon">
+                        <h3>
+                        <a href="https://www.facebook.com/vusang1332000/" data-label="Facebook" onclick="window.open(this.href,this.title,'width=500,height=500,top=300px,left=300px');  return false;"><i class="bi-facebook"></i></a>
+                        </h3>
+                    </div>
+            </div>
+        </div>
+    </div>
+</footer>
+</html>
